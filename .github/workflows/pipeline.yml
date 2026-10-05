@@ -214,11 +214,14 @@ jobs:
         with:
           name: app-jar
           path: target
- 
+          
+
+          
       - name: Authenticate to Vault and fetch JFrog credentials
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ env.VAULT_ADDR }}
+          namespace: admin
           method: approle
           roleId: ${{ env.VAULT_ROLE_ID }}
           secretId: ${{ env.VAULT_SECRET_ID }}
