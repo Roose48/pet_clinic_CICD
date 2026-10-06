@@ -238,8 +238,7 @@ jobs:
  
       - name: Upload JAR to Artifactory
         run: jf rt upload "target/*.jar" ${{ env.JFROG_REPO }}/        
-        
-        
+               
 
 
   # Docker Build and Push to ECR
@@ -254,38 +253,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      # ...your checkout/build steps...
-
-      - name: Debug OIDC claims
-        run: |
-          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r .value)
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-            echo "NO TOKEN RETURNED - check permissions: id-token: write"
-            exit 1
-          fi
-          PAYLOAD=$(echo "$TOKEN" | cut -d. -f2 | tr '_-' '/+')
-          while [ $(( ${#PAYLOAD} % 4 )) -ne 0 ]; do PAYLOAD="${PAYLOAD}="; done
-          echo "$PAYLOAD" | base64 -d | jq '{iss, aud, sub, repository, ref, environment, job_workflow_ref}'
-
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::501187947787:role/petclinic-prod-github-actions-deploy
-          aws-region: us-east-1   
-
-
-          
-     # - name: Configure AWS credentials
-      #  uses: aws-actions/configure-aws-credentials@v4
-       # with:
-        ##  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-         # aws-region: ${{ secrets.AWS_REGION }}
-
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+ 
       - name: Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
+ 
       - name: Build, tag, and push image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -300,6 +280,16 @@ jobs:
             $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push \
             $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+     # - name: Configure AWS credentials
+      #  uses: aws-actions/configure-aws-credentials@v4
+       # with:
+        ##  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+         # aws-region: ${{ secrets.AWS_REGION }}
+
+     
+ 
+            
 
 
 
