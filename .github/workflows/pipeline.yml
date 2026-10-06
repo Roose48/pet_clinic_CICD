@@ -266,12 +266,14 @@ jobs:
           #echo "Region: ${{ env.AWS_REGION }}"*/
 
 
-      - name: Debug GitHub Context
+      - name: Debug GitHub OIDC context
         run: |
           echo "Repository=${{ github.repository }}"
           echo "Ref=${{ github.ref }}"
           echo "RefName=${{ github.ref_name }}"
           echo "Event=${{ github.event_name }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Job: ${{ github.job }}"
 
           
 
